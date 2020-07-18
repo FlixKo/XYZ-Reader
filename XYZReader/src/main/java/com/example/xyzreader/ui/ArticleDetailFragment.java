@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.text.Html;
@@ -35,6 +36,8 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 // import androidx.palette.graphics.Palette;
 
 import com.android.volley.VolleyError;
@@ -212,10 +215,9 @@ public class ArticleDetailFragment extends Fragment implements
         TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
         TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
-        TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
+        RecyclerView bodyView = (RecyclerView) mRootView.findViewById(R.id.body_recyclerView);
 
-
-        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
+        //bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
             mRootView.setAlpha(0);
@@ -241,7 +243,16 @@ public class ArticleDetailFragment extends Fragment implements
                                 + "</font>"));
 
             }
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
+
+
+            String[] paragraphs = mCursor.getString(ArticleLoader.Query.BODY).split("(\r\n|\n)");
+            ArticleBodyAdapter bodyAdapter = new ArticleBodyAdapter();
+            bodyAdapter.setParagraphs(paragraphs);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+            bodyView.setLayoutManager(linearLayoutManager);
+            bodyView.setAdapter(bodyAdapter);
+
+           // bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
@@ -279,7 +290,7 @@ public class ArticleDetailFragment extends Fragment implements
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
             bylineView.setText("N/A" );
-            bodyView.setText("N/A");
+            //bodyView.setText("N/A");
         }
     }
 
